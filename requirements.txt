@@ -1,0 +1,4 @@
+# What scripts/predict_match.py needs to regenerate the submission file: the pinned model environment.
+# Python 3.14.7, wheels only:  python3.14 -m venv .venv && .venv/bin/pip install --only-binary :all: -r requirements.txt
+# Training from scratch also needs requirements-twin.txt (README.md, "How the model was made").
+-r requirements-model.txt

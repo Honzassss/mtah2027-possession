@@ -1,0 +1,21 @@
+# Downloaded or generated data: never committed
+external/
+twin/
+upstream/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Competition-format file patterns (real data must never enter git)
+*.mp4
+*_atd.txt
+*_atd.xml
+*_homography.csv
+*_smart_tagging.xml
+*.npz
+
+# CSVs holding frame labels
+gt/
+results/
+docs/private/

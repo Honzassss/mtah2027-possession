@@ -1,0 +1,7 @@
+# Pinned environment for pipeline/features.py, model.py, decode.py and analysis/model_v0.py, on top of
+# requirements-twin.txt. Python 3.14.7, wheels only (pip --only-binary :all:).
+# macOS: the lightgbm wheel loads OpenMP from Homebrew, so `brew install libomp` first (23.1.5 here).
+lightgbm==4.7.0
+narwhals==2.28.0          # pulled in by lightgbm
+numpy==2.5.4
+scipy==1.18.1

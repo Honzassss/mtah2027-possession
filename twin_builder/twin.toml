@@ -1,0 +1,128 @@
+# Stand-in ("twin") for the competition's tactical bundle, built from open DFL data (IDSSE).
+# Every number here is a stated default, except the [gaps] counts this copy leaves out (see there);
+# the seed makes the build reproducible byte for byte.
+# Source of each target is noted. "DATA.md" and "games.py" are the public challenge repository.
+
+seed = 20271117
+match = "J03WMX"
+
+[timeline]                     # games.py and DATA.md
+n_video_frames = 199319
+fps = 25
+half1 = [11185, 90651]         # graded video frames, inclusive
+half2 = [110808, 190197]
+kickoff1 = 11185
+kickoff2 = 113742              # 110808..113741 is all D
+public_window = [11185, 18684]
+
+[pitch]
+normalise_m = [105.3, 68.0]    # games.py pitch, so converting 0-1 to metres gives source metres back
+metadata_size = [105, 68]      # DATA.md: the metadata reports 105 x 68
+
+[slots]
+home = 23                      # 46 slots per DATA.md. The 23/23 split is an assumption.
+away = 23                      # Layout is home slots first, also an assumption (could not be confirmed).
+
+[players]
+target_mean_tracked = 20.5     # DATA.md, mean over graded frames, closed loop on the loss rate
+tracklet_mean_s = 40.0         # mean time between random tracklet breaks
+switch_without_loss_share = 0.15  # random breaks that only change slot, with no missing frames
+lost_mean_s = 3.0              # starting mean of a loss after a random break; rescaled by the loop
+occlusion_radius_m = 1.0       # two players closer than this form an occlusion
+occlusion_break_prob = 0.25    # chance an occlusion breaks one of the two tracklets
+occlusion_lost_mean_s = 1.0
+duplicate_rate_per_min = 4.0   # DATA.md: "occasionally exceeds 22 when the tracker duplicates someone"
+duplicate_mean_s = 2.5
+duplicate_offset_m = 1.0
+position_noise_m = 0.3         # radial RMS
+position_noise_corr_s = 1.0    # correlation time of the noise
+speed_window_frames = 12       # speed from noisy positions over +/- this many frames
+pad_walk_speed_mps = 0.9       # players in padded and pre-kickoff frames (source dead pace is 1.04)
+pad_walk_corr_s = 3.0
+ungraded_mean_objects = 0.3    # "almost none" across pre-match, halftime and post-match
+ungraded_track_mean_s = 4.0
+
+[ball]
+gap_dead_share = 0.6           # share of missing graded frames falling in stoppages; real value unknown
+missing_share = 0.40693        # DATA.md: visible on 94,214 of 158,857 graded frames
+ungraded_visible_share = 0.47635  # DATA.md: 113,488 visible overall, less 94,214 graded, over 40,462
+ungraded_block_mean_s = 30.0
+dead_walk_speed_mps = 0.7      # unparking: slow random walk while dead (DFL freezes the ball)
+dead_walk_corr_s = 2.0
+ungraded_walk_speed_mps = 0.5
+noise_m = 0.3                  # radial RMS on the visible ball; assumed equal to the players'
+noise_corr_s = 0.2
+# speed_fill_share =           # share of visible ball frames with a speed. Left out of this copy: the
+#                              # development twin took it from another team's report on the challenge match
+speed_block_mean_frames = 8    # filled in short runs; the run length is an assumption
+
+[gaps]                         # blackouts come in contiguous blocks
+# The twin used in development took its blackout counts (over 5, 10, 20, 30 and 60 s), its longest
+# blackout and a bound on the other long ones from a results file in the public challenge repository.
+# They describe the challenge match, so this copy leaves them out. Set them before building a twin:
+# count_over_5s =
+# count_over_10s =
+# count_over_20s =
+# count_over_30s =
+# count_over_60s =             # at least 1: the longest is one of them
+# longest_s =
+# upper_bin_s =                # the other gaps over 60 s are at most this long
+# Pareto exponent inside each of 5-10, 10-20, 20-30, 30-60, 60-upper, chosen together with the counts
+# of the development twin so that the long gaps leave room for short ones inside the missing share.
+alpha = [0.74, 4.0, 2.0, 2.25, 1.0]
+short_median_s = 0.7           # gaps under 5 s fill the rest of missing_share
+short_sigma = 0.8
+min_separation_frames = 5      # visible frames kept between two gaps so they do not merge
+# Relative chance a gap sits in a stoppage, by length: under 5, 5-10, 10-20, 20-30, 30-60, over 60.
+# Scaled together until the total equals gap_dead_share. Longer gaps are deader because a long
+# blackout cannot fit inside typical open play.
+dead_weight = [0.2, 0.32, 0.5, 0.73, 0.73, 1.0]
+# Spread of the per-gap dead fraction around its bin mean, same bins; larger is tighter.
+dead_concentration = [1.5, 1.5, 1.5, 3.0, 3.0, 30.0]
+
+[camera]                       # synthetic: says nothing about whether camera aim is a real signal
+start_matrix = [1822.663, -511.2005, 44.48168, 1.698323, 169.2971, 255.7303, -0.01907188, -0.5269586, 1.0]  # DATA.md
+focal_px = 2000.0
+principal_px = [960.0, 540.0]
+pan_gain = 0.7                 # how far the camera turns towards the ball
+smooth_s = 2.0                 # exponential smoothing of ball x
+lag_s = 1.0                    # the camera reacts this late
+reproj_median_play = 0.24      # DATA.md
+reproj_median_halftime = 1.5   # DATA.md
+reproj_median_other = 0.5      # assumption, pre-match and post-match
+reproj_sigma = 0.25
+
+[tags]                         # synthetic Smart Tagging, phases derived from the labels with noise
+team_home = "Barcelona"        # DATA.md tag values, kept so code matching them still runs on the twin
+team_away = "Atletic Club"
+early_open_s = 3.5             # set piece tags open about this long before the restart
+early_open_sd_s = 0.7
+late_close_s = 1.5
+late_close_sd_s = 0.5
+boundary_jitter_s = 1.0        # noise on phase boundaries
+team_flip_prob = 0.03
+false_positive_share = 0.05    # tags moved to a random time
+team_na_extra = 10             # N/A on throw-ins always, plus this many other set pieces (36 in DATA.md)
+
+[tags.code_counts]             # DATA.md
+"PLAYERS IN THE BOX" = 97
+"BALL IN FINAL THIRD" = 93
+"BALL IN THE BOX" = 72
+"PROGRESSION" = 66
+"DEFENDING IN MIDDLE THIRD" = 66
+"CREATING CHANCES" = 30
+"DEFENDING IN DEFENSIVE THIRD" = 30
+"LONG BALL" = 29
+"ATTACKING TRANSITION" = 24
+"DEFENSIVE TRANSITION" = 24
+"BUILD UP" = 22
+"DEFENDING IN ATTACKING THIRD" = 22
+"GOALS" = 4
+
+[tags.type_counts]             # DATA.md; kick-offs after goals follow the source match's goals
+"Throw-in" = 26
+"Corner Kick" = 12
+"Goal Kick" = 10
+"Free Kick" = 5
+"Kick Off (After Goal)" = 4
+"Kick Off (Start)" = 2
